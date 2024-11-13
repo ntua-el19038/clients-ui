@@ -128,9 +128,10 @@ const ClientListPage = () => {
                         {clients.length > 0 ? (
                             clients.map((client) => (
                                 <li key={client.id} className="client-list-item">
-                                    <Link to={`/client/${client.id}`}>
-                                        <strong>{client.name}</strong> - {client.useeClientLocation?.area}, {client.useeClientLocation?.zip}
+                                    <Link to={`/client/${client.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                        <strong style={{ color: '#007bff', textDecoration: 'underline' }}>{client.name}</strong>
                                     </Link>
+                                    - {client.useeClientLocation?.area}, {client.useeClientLocation?.zip}, {client.emails && client.emails.length > 0 ? "has email" : "no email"}
                                 </li>
                             ))
                         ) : (
