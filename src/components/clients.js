@@ -12,6 +12,7 @@ const ClientListPage = () => {
     const [searchName, setSearchName] = useState('');
     const [loadingMunicipalities, setLoadingMunicipalities] = useState(true);
     const [loadingClients, setLoadingClients] = useState(false);
+    const [emailFilter, setEmailFilter] = useState('all'); // New state for email filter
 
     // Pagination states
     const [currentPage, setCurrentPage] = useState(0); // API pages are usually 0-indexed
@@ -50,16 +51,30 @@ const ClientListPage = () => {
                     municipality: selectedMunicipality,
                 },
             });
-            const data = response.data["returnobject"]["page"];
-            setClients(data["content"]);
-            setCurrentPage(data["number"]);
-            setTotalPages(data["totalPages"]);
+            let data = response.data["returnobject"]["page"]["content"];
+
+            // Filter clients based on email availability
+            if (emailFilter === 'withEmail') {
+                data = data.filter(client => client.emails && client.emails.length > 0);
+            } else if (emailFilter === 'withoutEmail') {
+                data = data.filter(client => !client.emails || client.emails.length === 0);
+            }
+
+            setClients(data);
+            setCurrentPage(response.data["returnobject"]["page"]["number"]);
+            setTotalPages(response.data["returnobject"]["page"]["totalPages"]);
         } catch (error) {
             console.error('Error fetching clients:', error);
         } finally {
             setLoadingClients(false);
         }
     };
+// Handle email filter change
+    const handleEmailFilterChange = (e) => {
+        setEmailFilter(e.target.value);
+        setCurrentPage(0); // Reset to first page when filter changes
+    };
+
 
     // Handle search by name input change
     const handleSearchNameChange = (e) => {
@@ -76,7 +91,7 @@ const ClientListPage = () => {
     // Fetch clients when searchName or selectedMunicipality changes
     useEffect(() => {
         fetchClients(currentPage);
-    }, [searchName, selectedMunicipality, currentPage]);
+    }, [searchName, selectedMunicipality, currentPage, emailFilter]);
 
     // Handle page navigation
     const handleNextPage = () => {
@@ -120,6 +135,17 @@ const ClientListPage = () => {
                     ))}
                 </select>
 
+                {/* Email Filter Dropdown */}
+                <select
+                    value={emailFilter}
+                    onChange={handleEmailFilterChange}
+                    className="email-filter-select"
+                >
+                    <option value="all">All Shops</option>
+                    <option value="withEmail">Shops with Email</option>
+                    <option value="withoutEmail">Shops without Email</option>
+                </select>
+
                 {/* Client list display */}
                 {loadingClients ? (
                     <p>Loading clients...</p>
@@ -128,10 +154,15 @@ const ClientListPage = () => {
                         {clients.length > 0 ? (
                             clients.map((client) => (
                                 <li key={client.id} className="client-list-item">
-                                    <Link to={`/client/${client.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                        <strong style={{ color: '#007bff', textDecoration: 'underline' }}>{client.name}</strong>
+                                    <Link to={`/client/${client.id}`}
+                                          style={{textDecoration: 'none', color: 'inherit'}}>
+                                        <strong style={{
+                                            color: '#007bff',
+                                            textDecoration: 'underline'
+                                        }}>{client.name}</strong>
                                     </Link>
-                                    - {client.useeClientLocation?.area}, {client.useeClientLocation?.zip}, {client.emails && client.emails.length > 0 ? "has email" : "no email"}
+                                    - {client.useeClientLocation?.area}, {client.useeClientLocation?.zip},
+                                    {client.emails && client.emails.length > 0 ? "has email" : "no email"}
                                 </li>
                             ))
                         ) : (
@@ -149,8 +180,8 @@ const ClientListPage = () => {
                         Previous
                     </button>
                     <span>
-                        Page {currentPage + 1} of {totalPages}
-                    </span>
+                Page {currentPage + 1} of {totalPages}
+            </span>
                     <button
                         onClick={handleNextPage}
                         disabled={currentPage >= totalPages - 1}
@@ -160,6 +191,7 @@ const ClientListPage = () => {
                 </div>
             </div>
         </div>
+
     );
 };
 
