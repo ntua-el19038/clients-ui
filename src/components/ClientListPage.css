@@ -7,7 +7,7 @@
 
 .client-list-container {
     padding: 20px;
-    max-width: 600px;
+    max-width: 1000px;
     margin: 0 auto;
     background-color: #f9f9f9;
     border-radius: 8px;
@@ -28,8 +28,12 @@
 }
 
 .client-list-item {
+    display: grid; /* Use grid for alignment */
+    grid-template-columns: 30fr 20fr 20fr 5fr; /* Define column widths */
+    column-gap: 5px; /* Space between columns */
+    align-items: center; /* Align items vertically */
     padding: 10px;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
     background-color: #fff;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios, {options} from 'axios';
 import { Link } from 'react-router-dom';
 import './ClientListPage.css';
 
@@ -13,11 +13,14 @@ const ClientListPage = () => {
     const [loadingMunicipalities, setLoadingMunicipalities] = useState(true);
     const [loadingClients, setLoadingClients] = useState(false);
     const [emailFilter, setEmailFilter] = useState('all'); // New state for email filter
+    const [selectedOptions, setSelectedOptions] = useState({}); // Track selected options per client
+    const [clientNotes, setClientNotes] = useState({}); // Track notes for each client
+    const [editingNotes, setEditingNotes] = useState({}); // Track editing notes state
 
     // Pagination states
     const [currentPage, setCurrentPage] = useState(0); // API pages are usually 0-indexed
     const [totalPages, setTotalPages] = useState(0);
-    const [pageSize] = useState(20); // Number of clients per page
+    const [pageSize] = useState(10); // Number of clients per page
 
     // Fetch municipalities on component mount
     useEffect(() => {
@@ -43,6 +46,27 @@ const ClientListPage = () => {
     const fetchClients = async (page = 0) => {
         setLoadingClients(true);
         try {
+            // const myHeaders = new Headers();
+            // myHeaders.append("Content-Type", "application/json");
+            // // myHeaders.append("Cookie", "auth_token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkZXYiLCJyb2xlIjoiUk9MRV9BRE1JTiIsImlzcyI6InVzZWUtYXBwIiwiZXhwIjoxNzMyNjQzODE0LCJpYXQiOjE3MzE3Nzk4MTQsImp0aSI6ImVkNzdlNTYyLTk2OWItNDA2OC05ZGYyLWEyYTg3MWQ4MDlkNCJ9.tXOdObOPw3OuJZabgRlpLMplq_9N_bDhnIcHR4Kbu8E");
+            //
+            // const raw = JSON.stringify({
+            //     "username": "dev",
+            //     "password": "1234"
+            // });
+            //
+            // const requestOptions = {
+            //     method: "POST",
+            //     headers: myHeaders,
+            //     body: raw,
+            //     redirect: "follow",
+            //     withCredentials: true,  // Ensure cookies are sent with the request
+            // };
+            //
+            // fetch("http://localhost:8080/api/v1/auth/login", requestOptions)
+            //     .then((response) => response.text())
+            //     .then((result) => console.log(result))
+            //     .catch((error) => console.error(error));
             const response = await axios.get(`${baseUrl}/api/v1/useeClient`, {
                 params: {
                     page,
@@ -59,8 +83,18 @@ const ClientListPage = () => {
             } else if (emailFilter === 'withoutEmail') {
                 data = data.filter(client => !client.emails || client.emails.length === 0);
             }
-
+            // Initialize selectedOptions based on fetched data
+            const initialSelectedOptions = data.reduce((acc, client) => {
+                acc[client.id] = client?.approachDetails?.approachWay || null; // Use the client's pre-selected method or null
+                return acc;
+            }, {});
+            const initialNotes = data.reduce((acc, client) => {
+                acc[client.id] = client?.notes?.note || ''; // Initialize with existing notes or an empty string
+                return acc;
+            }, {});
             setClients(data);
+            setSelectedOptions(initialSelectedOptions);
+            setClientNotes(initialNotes);
             setCurrentPage(response.data["returnobject"]["page"]["number"]);
             setTotalPages(response.data["returnobject"]["page"]["totalPages"]);
         } catch (error) {
@@ -105,6 +139,94 @@ const ClientListPage = () => {
             setCurrentPage(currentPage - 1);
         }
     };
+    // Handle radio button click
+    const handleOptionChange = (clientId, option) => {
+        setSelectedOptions((prevSelectedOptions) => {
+            // If the same option is clicked, unselect it
+            if (prevSelectedOptions[clientId] === option) {
+                updateOptionInDB(clientId, null); // Send null to clear the selection in the database
+                return { ...prevSelectedOptions, [clientId]: null };
+            }
+
+            // Otherwise, select the new option
+            updateOptionInDB(clientId, option); // Update the database with the new selection
+            return { ...prevSelectedOptions, [clientId]: option };
+        });
+    };
+
+    // Function to update the database
+    const updateOptionInDB = async (clientId, option) => {
+        try {
+            const clientToUpdate = clients.find((client) => client.id === clientId);
+            clientToUpdate.approachDetails ={
+                approachWay: option,
+                approached: option==null ? "False" : "True",
+            }
+            let data = JSON.stringify(clientToUpdate);
+            // Axios PUT request configuration
+            let config = {
+                method: 'put',
+                maxBodyLength: Infinity,
+                url: 'http://localhost:8080/api/v1/useeClient/',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                data: data,
+            };
+
+            // Make the request
+            const response = await axios.request(config);
+            console.log('Response from server:', response.data);
+            // Update the clients state correctly
+            setClients((prevClients) => {
+                const updatedClients = prevClients.map((client) =>
+                    client.id === clientId ? { ...client, approachDetails: clientToUpdate.approachDetails } : client
+                );
+                return updatedClients;
+            });
+        } catch (error) {
+            console.error('Error updating contact method in the database:', error);
+        }
+    };
+    // Handle local notes change
+    const handleNotesChange = (clientId, note) => {
+        setClientNotes((prevNotes) => ({ ...prevNotes, [clientId]: note }));
+    };
+
+// Save notes to the database
+    const updateNotesInDB = async (clientId) => {
+        try {
+            const updatedClient = clients.find((client) => client.id === clientId);
+            updatedClient.notes ={
+                note:clientNotes[clientId]
+            };  // Update notes in the client object
+            let data = JSON.stringify(updatedClient);
+            // Axios PUT request configuration
+            let config = {
+                method: 'put',
+                maxBodyLength: Infinity,
+                url: 'http://localhost:8080/api/v1/useeClient/',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                data: data,
+            };
+
+            // Make the request
+            const response = await axios.request(config);
+            console.log('Response from server:', response.data);
+            // Update the clients state correctly
+            setClients((prevClients) => {
+                const updatedClients = prevClients.map((client) =>
+                    client.id === clientId ? { ...client, approachDetails: updatedClient.approachDetails } : client
+                );
+                return updatedClients;
+            });
+        } catch (error) {
+            console.error('Error updating notes in the database:', error);
+        }
+    };
+
 
     return (
         <div className="client-list-page">
@@ -154,15 +276,59 @@ const ClientListPage = () => {
                         {clients.length > 0 ? (
                             clients.map((client) => (
                                 <li key={client.id} className="client-list-item">
-                                    <Link to={`/client/${client.id}`}
-                                          style={{textDecoration: 'none', color: 'inherit'}}>
-                                        <strong style={{
-                                            color: '#007bff',
-                                            textDecoration: 'underline'
-                                        }}>{client.name}</strong>
-                                    </Link>
-                                    - {client.useeClientLocation?.area}, {client.useeClientLocation?.zip},
-                                    {client.emails && client.emails.length > 0 ? "has email" : "no email"}
+                                    {/* Client info */}
+                                    <div className="client-info">
+                                        <Link to={`/client/${client.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                            <strong style={{ color: '#007bff', textDecoration: 'underline' }}>{client.name}</strong>
+                                        </Link>
+                                        <span>
+                                    - {client.useeClientLocation?.area}, {client.useeClientLocation?.zip}
+                                </span>
+                                    </div>
+
+                                    {/* Radio buttons */}
+                                    <div className="contact-options">
+                                        <label>
+                                            <input
+                                                type="radio"
+                                                name={`contact-${client.id}`}
+                                                checked={selectedOptions[client.id] === 'DOOR2DOOR'}
+                                                onClick={() => handleOptionChange(client.id, 'DOOR2DOOR')}
+                                            />
+                                            Door2Door
+                                        </label>
+                                        <label>
+                                            <input
+                                                type="radio"
+                                                name={`contact-${client.id}`}
+                                                checked={selectedOptions[client.id] === 'EMAIL'}
+                                                onClick={() => handleOptionChange(client.id, 'EMAIL')}
+                                            />
+                                            Email
+                                        </label>
+                                        <label>
+                                            <input
+                                                type="radio"
+                                                name={`contact-${client.id}`}
+                                                checked={selectedOptions[client.id] === 'PHONE'}
+                                                onClick={() => handleOptionChange(client.id, 'PHONE')}
+                                            />
+                                            Phone
+                                        </label>
+                                    </div>
+                                    {/* Notes Section */}
+                                    <div className="notes-section">
+                                        <textarea
+                                            value={clientNotes[client.id] || ''}
+                                            onChange={(e) => handleNotesChange(client.id, e.target.value)}
+                                            placeholder="Add notes here..."
+                                        />
+                                        <button
+                                            onClick={() => updateNotesInDB(client.id)}
+                                        >
+                                            Save Notes
+                                        </button>
+                                    </div>
                                 </li>
                             ))
                         ) : (
