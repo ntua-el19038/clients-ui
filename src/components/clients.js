@@ -15,7 +15,6 @@ const ClientListPage = () => {
     const [emailFilter, setEmailFilter] = useState('all'); // New state for email filter
     const [selectedOptions, setSelectedOptions] = useState({}); // Track selected options per client
     const [clientNotes, setClientNotes] = useState({}); // Track notes for each client
-    const [editingNotes, setEditingNotes] = useState({}); // Track editing notes state
 
     // Pagination states
     const [currentPage, setCurrentPage] = useState(0); // API pages are usually 0-indexed
