@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios, {options} from 'axios';
 import { Link } from 'react-router-dom';
-import './ClientListPage.css';
+import './clients.css';
+import authApi from "../API/auth"
+import {fetchAll} from "../API/auth";
+
+
 
 const baseUrl = 'http://localhost:8080';
 
@@ -23,13 +27,24 @@ const ClientListPage = () => {
 
     // Fetch municipalities on component mount
     useEffect(() => {
+        const requestData={
+            "username": "dev",
+            "password": "1234"
+        }
+        authApi.login(requestData).then((response) => {
+            // console.log("response", response);
+            let token = JSON.stringify(response.headers.authorization);
+            token = token.substring(8, token.length - 1);
+            localStorage.setItem("token", token);
+
+        });
         fetchMunicipalities();
     }, []);
 
     // Function to fetch municipalities
     const fetchMunicipalities = async () => {
         try {
-            const response = await axios.get(`${baseUrl}/api/v1/useeClient/municipality`);
+            const response = await authApi.fetchMunicipality();
             const municipalityData = response.data["returnobject"];
             if (Array.isArray(municipalityData)) {
                 setMunicipalities(municipalityData);
@@ -45,37 +60,16 @@ const ClientListPage = () => {
     const fetchClients = async (page = 0) => {
         setLoadingClients(true);
         try {
-            // const myHeaders = new Headers();
-            // myHeaders.append("Content-Type", "application/json");
-            // // myHeaders.append("Cookie", "auth_token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkZXYiLCJyb2xlIjoiUk9MRV9BRE1JTiIsImlzcyI6InVzZWUtYXBwIiwiZXhwIjoxNzMyNjQzODE0LCJpYXQiOjE3MzE3Nzk4MTQsImp0aSI6ImVkNzdlNTYyLTk2OWItNDA2OC05ZGYyLWEyYTg3MWQ4MDlkNCJ9.tXOdObOPw3OuJZabgRlpLMplq_9N_bDhnIcHR4Kbu8E");
-            //
-            // const raw = JSON.stringify({
-            //     "username": "dev",
-            //     "password": "1234"
-            // });
-            //
-            // const requestOptions = {
-            //     method: "POST",
-            //     headers: myHeaders,
-            //     body: raw,
-            //     redirect: "follow",
-            //     withCredentials: true,  // Ensure cookies are sent with the request
-            // };
-            //
-            // fetch("http://localhost:8080/api/v1/auth/login", requestOptions)
-            //     .then((response) => response.text())
-            //     .then((result) => console.log(result))
-            //     .catch((error) => console.error(error));
-            const response = await axios.get(`${baseUrl}/api/v1/useeClient`, {
-                params: {
-                    page,
-                    size: pageSize,
-                    name: searchName,
-                    municipality: selectedMunicipality,
-                },
-            });
+            const pageable={ page,
+                size: pageSize}
+            const data1 = {
+                name: searchName,
+                municipality: selectedMunicipality
+            }
+            const response = await authApi.fetchAll(pageable, data1);
+            // console.log("Response", response);
             let data = response.data["returnobject"]["page"]["content"];
-
+            console.log(data)
             // Filter clients based on email availability
             if (emailFilter === 'withEmail') {
                 data = data.filter(client => client.emails && client.emails.length > 0);

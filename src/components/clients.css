@@ -1,0 +1,74 @@
+
+.client-list-page {
+    background-color: #67badb; /* Light cyan color */
+    padding: 20px;
+    min-height: 100vh; /* Ensures the background covers the whole page */
+}
+
+
+.client-list-container {
+    padding: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.search-input, .municipality-select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.client-list {
+    list-style: none;
+    padding: 0;
+}
+
+.client-list-item {
+    display: grid; /* Use grid for alignment */
+    grid-template-columns: 30fr 20fr 20fr 5fr; /* Define column widths */
+    column-gap: 5px; /* Space between columns */
+    align-items: center; /* Align items vertically */
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.client-list-item:hover {
+    background-color: #f0f0f0;
+}
+
+
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.pagination-controls button {
+    padding: 10px 15px;
+    margin: 0 5px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+.pagination-controls button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.pagination-controls span {
+    margin: 0 10px;
+}
