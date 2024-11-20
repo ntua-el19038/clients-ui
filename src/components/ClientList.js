@@ -261,6 +261,7 @@ const ClientListPage = () => {
             const response = await authApi.updateUser(updatedClient);
             console.log('Response from server:', response.data);
             showAlert("Data saved successfully", alertTypes.SUCCESS)
+            handleCloseModal();
             setClients((prevClients) =>
                 prevClients.map((client) => {
                     if (client.id === modalData.id) {
@@ -388,7 +389,22 @@ const ClientListPage = () => {
             </Container>
 
             {/* Pagination */}
-            <Box sx={{ position: "sticky", bottom: 0, zIndex: 1000, backgroundColor: "white", padding: 2, borderTop: "1px solid #ddd", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Box
+                sx={{
+                    position: "fixed",
+                    bottom: 0,
+                    left: 0,
+                    width: "100%",
+                    zIndex: 1000,
+                    backgroundColor: "white",
+                    padding: 2,
+                    borderTop: "1px solid #ddd",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    boxShadow: "0px -2px 5px rgba(0, 0, 0, 0.1)"
+                }}
+            >
                 <Pagination
                     count={totalPages}
                     page={currentPage}
@@ -414,6 +430,8 @@ const ClientListPage = () => {
                     </Select>
                 </Box>
             </Box>
+
+
             {/* Modal */}
             {modalData && (
                 <Modal open={isModalOpen} onClose={handleCloseModal}>
