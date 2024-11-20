@@ -155,20 +155,7 @@ const ClientListPage = () => {
                 approachWay: option,
                 approached: option==null ? "False" : "True",
             }
-            let data = JSON.stringify(clientToUpdate);
-            // Axios PUT request configuration
-            let config = {
-                method: 'put',
-                maxBodyLength: Infinity,
-                url: 'http://localhost:8080/api/v1/useeClient/',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                data: data,
-            };
-
-            // Make the request
-            const response = await axios.request(config);
+            const response = await authApi.updateUser(clientToUpdate);
             console.log('Response from server:', response.data);
             // Update the clients state correctly
             setClients((prevClients) => {
