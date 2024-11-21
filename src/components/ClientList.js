@@ -319,37 +319,37 @@ const ClientListPage = () => {
             </Box>
 
             {/* Table */}
-            <Container>
+            <Container sx={{ paddingBottom: "100px" }}> {/* Adjust the padding as needed */}
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell>Name</TableCell>
-                            <TableCell>Area</TableCell>
-                            <TableCell>Zip Code</TableCell>
-                            <TableCell>Approach Methods</TableCell>
-                            <TableCell>Notes</TableCell>
+                            <TableCell sx={{ width: "25%" }}>Name</TableCell>
+                            <TableCell sx={{ width: "15%" }}>Area</TableCell>
+                            <TableCell sx={{ width: "5%" }}>Zip Code</TableCell>
+                            <TableCell sx={{ width: "45%" }}>Approach Methods</TableCell>
+                            <TableCell sx={{ width: "10%" }}>Notes</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {clients.map((client) => (
                             <TableRow key={client.id}>
                                 {/* Name Cell */}
-                                <TableCell onClick={() => handleOpenDetailModal(client)} style={{ cursor: "pointer" }}>
+                                <TableCell sx={{ width: "25%" }} onClick={() => handleOpenDetailModal(client)} style={{ cursor: "pointer" }}>
                                     <Typography>{client.name}</Typography>
                                 </TableCell>
 
                                 {/* Area Cell */}
-                                <TableCell onClick={() => handleOpenDetailModal(client)} style={{ cursor: "pointer" }}>
+                                <TableCell sx={{ width: "15%" }} onClick={() => handleOpenDetailModal(client)} style={{ cursor: "pointer" }}>
                                     <Typography>{client.useeClientLocation?.area || "N/A"}</Typography>
                                 </TableCell>
 
                                 {/* Zip Code Cell */}
-                                <TableCell onClick={() => handleOpenDetailModal(client)} style={{ cursor: "pointer" }}>
+                                <TableCell sx={{ width: "5%" }} onClick={() => handleOpenDetailModal(client)} style={{ cursor: "pointer" }}>
                                     <Typography>{client.useeClientLocation?.zip || "N/A"}</Typography>
                                 </TableCell>
 
                                 {/* Approach Methods Cell */}
-                                <TableCell>
+                                <TableCell sx={{ width: "45%" }}>
                                     {["DOOR2DOOR", "EMAIL", "PHONE"].map((method) => (
                                         <FormControlLabel
                                             key={method}
@@ -365,28 +365,23 @@ const ClientListPage = () => {
                                 </TableCell>
 
                                 {/* Notes Cell */}
-                                <TableCell>
-                                    <TableCell>
-                                        <Button
-                                            variant="outlined"
-                                            onClick={(e) => {
-                                                e.stopPropagation(); // Prevents the row click event from triggering
-                                                handleOpenModal(client);
-                                            }}
-                                        >
-                                            View Notes
-                                        </Button>
-                                    </TableCell>
-
-
+                                <TableCell sx={{ width: "10%" }}>
+                                    <Button
+                                        variant="outlined"
+                                        onClick={(e) => {
+                                            e.stopPropagation(); // Prevents the row click event from triggering
+                                            handleOpenModal(client);
+                                        }}
+                                    >
+                                        View Notes
+                                    </Button>
                                 </TableCell>
-
                             </TableRow>
                         ))}
                     </TableBody>
-
                 </Table>
             </Container>
+
 
             {/* Pagination */}
             <Box
@@ -522,7 +517,7 @@ const ClientListPage = () => {
                             <strong>Address:</strong>{" "}
                             {`${detailData.useeClientLocation?.street || ""} ${detailData.useeClientLocation?.number || ""}, ${detailData.useeClientLocation?.area || ""}, ${detailData.useeClientLocation?.zip || ""}`}
                         </Typography>
-                        <Typography variant="body1" sx={{ mb: 2, fontSize: "1.2rem" }}>
+                        <Typography variant="body1" sx={{ mb: 2, fontSize: "1rem" }}>
                             <strong>Location:</strong>{" "}
                                 <a
                                     href={`${detailData.pin}`}
